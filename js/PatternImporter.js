@@ -95,7 +95,7 @@ function PatternImporter(){
         if (stroke == "#ffff00" || stroke == "#ff0" || stroke == "yellow" || stroke == "rgb(255,255,0)") return "F";
         if (stroke == "#ff00ff" || stroke == "#f0f" || stroke == "magenta" || stroke == "rgb(255,0,255)") return "U";
         if (stroke == "#00ffff" || stroke == "#0ff" || stroke == "cyan" || stroke == "rgb(0,255,255)") return "P";
-        if (stroke == "#ffa500" || stroke == "orange" || stroke == "rgb(255,165,0)") return "R";
+        if (stroke == "#c8c8c8" || stroke == "rgb(200,200,200)") return "R";
         badColors.push(stroke);
         return null;
     }

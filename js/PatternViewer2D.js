@@ -71,7 +71,7 @@ function PatternViewer2D($container){
         if (assignment == "C") return "#0f0";//cut
         if (assignment == "F") return "#ff0";//facet
         if (assignment == "U") return "#f0f";//hinge
-        if (assignment == "R") return "#ffa500";//rulings
+        if (assignment == "R") return "#c8c8c8";//rulings
         return "#0ff"
     }
 
