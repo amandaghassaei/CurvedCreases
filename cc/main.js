@@ -13,9 +13,10 @@ $(function() {
 
     threeView.addModel(model3D);
 
-    // dynamicSolver.setDamping(0.1);
+    dynamicSolver.setDamping(0.3);
     model3D.setColorMode("axialStrain");
 
+    // patternImporter.loadSVG('assets/Tessellations/reschTriTessellation.svg', {vertexTol: 1.8}, function(){
     patternImporter.loadSVG('assets/cctests/huffmanTower-facets.svg', {vertexTol: 1.8}, function(){
 
         var fold = patternImporter.getFold();

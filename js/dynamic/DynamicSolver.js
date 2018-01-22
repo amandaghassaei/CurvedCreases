@@ -57,8 +57,9 @@ function DynamicSolver($canvas){
         //re calc edge lengths
         fold = edgesVerticesToEdgesLengths(fold);
 
+
         updateOriginalPosition();
-        updateMaterials();
+        updateMaterials(true);//beamMeta
         updateNominalTriangles();
         updateCreasesMeta();
     }
