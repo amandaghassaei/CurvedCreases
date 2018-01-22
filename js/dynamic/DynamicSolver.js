@@ -15,6 +15,7 @@ function DynamicSolver($canvas){
 
     var creaseStiffness = 0.7;
     var facetStiffness = 0.7;
+    var ruleStiffness = 0.7;
     var creaseMaterialHasChanged = false;
     var damping = 0.85;
 
@@ -96,7 +97,9 @@ function DynamicSolver($canvas){
 
         for (var i=0;i<creaseParams.length;i++) {//allCreaseParams.length
             var _creaseParams = creaseParams[i];//face1Ind, vert1Ind, face2Ind, ver2Ind, edgeInd, angle
-            var type = _creaseParams[5]!=0 ? 1:0;
+            var type = 0;
+            if (fold.edges_assignment[creaseParams[4]] == "F") type = 1;
+            else if (fold.edges_assignment[creaseParams[4] == "R"]) type = 2;
             //edge, face1Index, face2Index, targetTheta, type, node1, node2, index
             creases.push(new Crease(edges[_creaseParams[4]], _creaseParams[0], _creaseParams[2], _creaseParams[5], type, nodes[_creaseParams[1]], nodes[_creaseParams[3]], creases.length));
         }
@@ -893,6 +896,11 @@ function DynamicSolver($canvas){
         creaseMaterialHasChanged = true;
     }
 
+    function setRuleStiffness(stiffness){
+        ruleStiffness = stiffness;
+        creaseMaterialHasChanged = true;
+    }
+
     function setCreaseStiffness(stiffness){
         creaseStiffness = stiffness;
         creaseMaterialHasChanged = true;
@@ -924,6 +932,7 @@ function DynamicSolver($canvas){
 
         setAxialStiffness: setAxialStiffness,
         setFacetStiffness: setFacetStiffness,
+        setRuleStiffness: setRuleStiffness,
         setCreaseStiffness: setCreaseStiffness,
         setDamping: setDamping,
 

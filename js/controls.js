@@ -442,6 +442,10 @@ function initControls(globals){
         globals.panelStiffness = val;
         globals.Animator.getSolver().setFacetStiffness(globals.panelStiffness);
     });
+    setSliderInput("#rulingStiffness", globals.rulingStiffness, 0, 3, 0.01, function(val){
+        globals.rulingStiffness = val;
+        globals.Animator.getSolver().setRuleStiffness(globals.rulingStiffness);
+    });
 
     setSliderInput("#percentDamping", globals.percentDamping, 0.1, 1, 0.01, function(val){
         globals.percentDamping = val;
@@ -559,6 +563,7 @@ function initControls(globals){
             globals.Model3D.setHingeVisiblity(globals.passiveEdgesVisible);
             globals.Model3D.setBoundaryVisiblity(globals.boundaryEdgesVisible);
             globals.Model3D.setPinnedVisiblity(globals.pinnedEdgesVisibile);
+            globals.Model3D.setRulingVisiblity(globals.ruleEdgesVisible);
         }
     });
     setCheckbox("#mtnsVisible", globals.mtnsVisible, function(val){
@@ -580,6 +585,10 @@ function initControls(globals){
     setCheckbox("#boundaryEdgesVisible", globals.boundaryEdgesVisible, function(val){
         globals.boundaryEdgesVisible = val;
         globals.Model3D.setBoundaryVisiblity(globals.boundaryEdgesVisible);
+    });
+    setCheckbox("#ruleEdgesVisible", globals.ruleEdgesVisible, function(val){
+        globals.ruleEdgesVisible = val;
+        globals.Model3D.setRulingVisiblity(globals.ruleEdgesVisible);
     });
 
     setCheckbox("#meshVisible", globals.meshVisible, function(val){

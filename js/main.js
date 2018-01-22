@@ -30,6 +30,7 @@ $(function() {
     globals.Model3D.setHingeVisiblity(globals.passiveEdgesVisible);
     globals.Model3D.setBoundaryVisiblity(globals.boundaryEdgesVisible);
     globals.Model3D.setPinnedVisiblity(globals.pinnedEdgesVisible);
+    globals.Model3D.setRulingVisiblity(globals.ruleEdgesVisible);
     var object3Ds = globals.Model3D.getObject3Ds();
     _.each(object3Ds, function(object){
         globals.threeView.sceneAddModel(object);

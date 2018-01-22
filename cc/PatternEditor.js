@@ -32,8 +32,6 @@ function PatternEditor(model3D, dynamicSolver){
         e.stopPropagation();
     });
 
-    svg.zoom(1000);
-
     function draw(fold){
         var coords, edge_vertices, j, len, len1, ref, ref1, vertex; ref = fold.vertices_coords;
 
@@ -71,6 +69,7 @@ function PatternEditor(model3D, dynamicSolver){
 
           ; }
         svg.viewbox(svg.bbox());
+        svg.zoom(1000);
 
         function dragVertex(index, point){
             fold.vertices_coords[index] = [point.x, 0, point.y];

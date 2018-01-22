@@ -24,6 +24,7 @@ function Model3D(params){
     setFacetVisiblity(false);//default to no facet vis
     var borderLines = new THREE.LineSegments(null, lineMaterial);
     var pinnedLines = new THREE.LineSegments(null, lineMaterial);
+    var ruleLines = new THREE.LineSegments(null, lineMaterial);
 
     var lines = {
         U: hingeLines,
@@ -32,7 +33,8 @@ function Model3D(params){
         C: cutLines,
         F: facetLines,
         B: borderLines,
-        P: pinnedLines
+        P: pinnedLines,
+        R: ruleLines
     };
 
     var positions;//place to store buffer geo vertex data
@@ -150,6 +152,7 @@ function Model3D(params){
         setHingeVisiblity(state);
         setBoundaryVisiblity(state);
         setPinnedVisiblity(state);
+        setRulingVisiblity(state);
     }
 
     function setMountainVisiblity(state){
@@ -174,6 +177,10 @@ function Model3D(params){
 
     function setPinnedVisiblity(state){
         pinnedLines.visible = state;
+    }
+
+    function setRulingVisiblity(state){
+        ruleLines.visible = state;
     }
 
     function setMeshVisibility(state){
@@ -235,14 +242,11 @@ function Model3D(params){
         var positionsAttribute = new THREE.BufferAttribute(positions, 3);
 
         var lineIndices = {
-            U: [],
-            V: [],
-            M: [],
-            B: [],
-            F: [],
-            C: [],
-            P: []
         };
+        _.each(lines, function(object, key){
+            lineIndices[key] = [];
+        });
+
         for (var i=0;i<fold.edges_assignment.length;i++){
             var edge = fold.edges_vertices[i];
             var assignment = fold.edges_assignment[i];
@@ -282,17 +286,14 @@ function Model3D(params){
     }
 
     function getObject3Ds(){
-        return [
+        var objects = [
             frontside,
             backside,
-            lines.U,
-            lines.M,
-            lines.V,
-            lines.C,
-            lines.F,
-            lines.B,
-            lines.P
         ];
+        _.each(lines, function(line){
+            objects.push(line);
+        });
+        return objects;
     }
 
     function getGeometry(){
@@ -344,12 +345,13 @@ function Model3D(params){
         setHingeVisiblity: setHingeVisiblity,
         setBoundaryVisiblity: setBoundaryVisiblity,
         setPinnedVisiblity: setPinnedVisiblity,
+        setRulingVisiblity: setRulingVisiblity,
         setMeshVisibility: setMeshVisibility,
 
         getGeometry: getGeometry,//returns buffer geometry, for save stl
         calculateGeometryCenter: calculateGeometryCenter,
         getDimensions: getDimensions,//return vector3, for save stl
         getMesh: getMesh,//for direct manipulation, actually returns two meshes [frontside, backside]
-        getObject3Ds: getObject3Ds,//return array of all object3ds, so they can be added to threejs scene
+        getObject3Ds: getObject3Ds//return array of all object3ds, so they can be added to threejs scene
     }
 }

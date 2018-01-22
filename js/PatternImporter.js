@@ -95,6 +95,7 @@ function PatternImporter(){
         if (stroke == "#ffff00" || stroke == "#ff0" || stroke == "yellow" || stroke == "rgb(255,255,0)") return "F";
         if (stroke == "#ff00ff" || stroke == "#f0f" || stroke == "magenta" || stroke == "rgb(255,0,255)") return "U";
         if (stroke == "#00ffff" || stroke == "#0ff" || stroke == "cyan" || stroke == "rgb(0,255,255)") return "P";
+        if (stroke == "#ffa500" || stroke == "orange" || stroke == "rgb(255,165,0)") return "R";
         badColors.push(stroke);
         return null;
     }
@@ -366,6 +367,7 @@ function PatternImporter(){
             findType(fold, "C", $paths, $lines, $rects, $polygons, $polylines);
             findType(fold, "F", $paths, $lines, $rects, $polygons, $polylines);
             findType(fold, "U", $paths, $lines, $rects, $polygons, $polylines);
+            findType(fold, "R", $paths, $lines, $rects, $polygons, $polylines);
 
             //check for bad colors
             if (badColors.length>0){
@@ -512,7 +514,7 @@ function PatternImporter(){
                     var assignment = fold.edges_assignment[i];
                     if (assignment == "M") foldAngles.push(-Math.PI);
                     else if (assignment == "V") foldAngles.push(Math.PI);
-                    else if (assignment == "F") foldAngles.push(0);
+                    else if (assignment == "F" || assignment == "R") foldAngles.push(0);
                     else foldAngles.push(null);
                 }
                 fold.edges_foldAngles = foldAngles;
@@ -571,6 +573,7 @@ function PatternImporter(){
         $("#numFacets").html("(" + FOLD.filter.flatEdges(fold).length + ")");
         $("#numBoundary").html("(" + FOLD.filter.boundaryEdges(fold).length + ")");
         $("#numPassive").html("(" + FOLD.filter.unassignedEdges(fold).length + ")");
+        $("#numRules").html("(" + FOLD.filter.edgesAssigned(fold, "R").length + ")");
 
         return fold;
     }
