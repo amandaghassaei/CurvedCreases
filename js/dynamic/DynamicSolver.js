@@ -47,10 +47,21 @@ function DynamicSolver($canvas){
     var creaseMeta;//[k, d, targetTheta, -] textureDimCreases
     var creaseMeta2;//[node1Index, node2Index, node3index, node4index]//nodes 1 and 2 are opposite crease, 3 and 4 are on crease, textureDimCreases
     var nodeCreaseMeta;//[creaseIndex (thetaIndex), nodeIndex (1/2/3/4), -, -] textureDimNodeCreases
-    var creaseGeo;//[h1, h2, coef1, coef2]
+    var creaseGeo;//[h1, h2, coef1, coef2] - calculated by shader
     var creaseVectors;//indices of crease nodes
     var theta;//[theta, w, normalIndex1, normalIndex2]
     var lastTheta;//[theta, w, normalIndex1, normalIndex2]
+
+    function updateFoldVerticesCoords(vertices_coords){//for updating edits from pattern, only vertices_coords is different
+        fold.vertices_coords = vertices_coords;
+        //re calc edge lengths
+        fold = edgesVerticesToEdgesLengths(fold);
+
+        updateOriginalPosition();
+        updateMaterials();
+        updateNominalTriangles();
+        updateCreasesMeta();
+    }
 
     function setFold(_fold){
 
@@ -90,7 +101,7 @@ function DynamicSolver($canvas){
         // _nodes[_faces[0][2]].setFixed(true);
 
         for (var i=0;i<fold.edges_vertices.length;i++) {
-            edges.push(new Beam([nodes[fold.edges_vertices[i][0]], nodes[fold.edges_vertices[i][1]]]));
+            edges.push(new Beam([nodes[fold.edges_vertices[i][0]], nodes[fold.edges_vertices[i][1]]], i));
         }
 
         var creaseParams = getFacesAndVerticesForEdges(fold);
@@ -491,14 +502,12 @@ function DynamicSolver($canvas){
 
         gpuMath.initTextureFromData("u_meta", textureDim, textureDim, "FLOAT", meta, true);
         gpuMath.initTextureFromData("u_meta2", textureDim, textureDim, "FLOAT", meta2, true);
-        gpuMath.initTextureFromData("u_nominalTrinagles", textureDimFaces, textureDimFaces, "FLOAT", nominalTriangles, true);
         gpuMath.initTextureFromData("u_nodeCreaseMeta", textureDimNodeCreases, textureDimNodeCreases, "FLOAT", nodeCreaseMeta, true);
         gpuMath.initTextureFromData("u_creaseMeta2", textureDimCreases, textureDimCreases, "FLOAT", creaseMeta2, true);
         gpuMath.initTextureFromData("u_nodeFaceMeta", textureDimNodeFaces, textureDimNodeFaces, "FLOAT", nodeFaceMeta, true);
         gpuMath.initTextureFromData("u_creaseGeo", textureDimCreases, textureDimCreases, "FLOAT", creaseGeo, true);
         gpuMath.initFrameBufferForTexture("u_creaseGeo", true);
         gpuMath.initTextureFromData("u_faceVertexIndices", textureDimFaces, textureDimFaces, "FLOAT", faceVertexIndices, true);
-        gpuMath.initTextureFromData("u_nominalTriangles", textureDimFaces, textureDimFaces, "FLOAT", nominalTriangles, true);
 
         gpuMath.createProgram("positionCalc", vertexShader, document.getElementById("positionCalcShader").text);
         gpuMath.setUniformForProgram("positionCalc", "u_velocity", 0, "1i");
@@ -704,7 +713,7 @@ function DynamicSolver($canvas){
             var assignment = "M";
             if (crease.type == 1) assignment = "F";
             if (crease.type == 2) assignment = "R";
-            creaseMeta[i*4] = getCreaseK(crease.getLength(), assignment);
+            creaseMeta[i*4] = getCreaseK(fold.edges_length[crease.edge.index], assignment);
             // creaseMeta[i*4+1] = crease.getD();
             if (initing) creaseMeta[i*4+2] = crease.getTargetTheta();
         }
@@ -778,34 +787,12 @@ function DynamicSolver($canvas){
         faceVertexIndices = new Float32Array(textureDimFaces*textureDimFaces*4);
         creaseMeta = new Float32Array(textureDimCreases*textureDimCreases*4);
         nodeFaceMeta = new Float32Array(textureDimNodeFaces*textureDimNodeFaces*4);
-        nominalTriangles = new Float32Array(textureDimFaces*textureDimFaces*4);
         nodeCreaseMeta = new Float32Array(textureDimNodeCreases*textureDimNodeCreases*4);
         creaseMeta2 = new Float32Array(textureDimCreases*textureDimCreases*4);
         creaseGeo = new Float32Array(textureDimCreases*textureDimCreases*4);
         creaseVectors = new Float32Array(textureDimCreases*textureDimCreases*4);
         theta = new Float32Array(textureDimCreases*textureDimCreases*4);
         lastTheta = new Float32Array(textureDimCreases*textureDimCreases*4);
-
-        for (var i=0;i<fold.faces_vertices.length;i++){
-            var face = fold.faces_vertices[i];
-            faceVertexIndices[4*i] = face[0];
-            faceVertexIndices[4*i+1] = face[1];
-            faceVertexIndices[4*i+2] = face[2];
-
-            var a = makeVector3(fold.vertices_coords[face[0]]);
-            var b = makeVector3(fold.vertices_coords[face[1]]);
-            var c = makeVector3(fold.vertices_coords[face[2]]);
-            var ab = (b.clone().sub(a)).normalize();
-            var ac = (c.clone().sub(a)).normalize();
-            var bc = (c.clone().sub(b)).normalize();
-            nominalTriangles[4*i] = Math.acos(ab.dot(ac));
-            nominalTriangles[4*i+1] = Math.acos(-1*ab.dot(bc));
-            nominalTriangles[4*i+2] = Math.acos(ac.dot(bc));
-
-            if (Math.abs(nominalTriangles[4*i]+nominalTriangles[4*i+1]+nominalTriangles[4*i+2]-Math.PI)>0.1){
-                console.warn("bad angles");
-            }
-        }
 
 
         for (var i=0;i<textureDim*textureDim;i++){
@@ -873,7 +860,33 @@ function DynamicSolver($canvas){
         updateExternalForces();
         updateCreasesMeta(true);
         updateCreaseVectors();
+        updateNominalTriangles();
         setCreasePercent(creasePercent);
+    }
+
+    function updateNominalTriangles(){
+        nominalTriangles = new Float32Array(textureDimFaces*textureDimFaces*4);
+        for (var i=0;i<fold.faces_vertices.length;i++){
+            var face = fold.faces_vertices[i];
+            faceVertexIndices[4*i] = face[0];
+            faceVertexIndices[4*i+1] = face[1];
+            faceVertexIndices[4*i+2] = face[2];
+
+            var a = makeVector3(fold.vertices_coords[face[0]]);
+            var b = makeVector3(fold.vertices_coords[face[1]]);
+            var c = makeVector3(fold.vertices_coords[face[2]]);
+            var ab = (b.clone().sub(a)).normalize();
+            var ac = (c.clone().sub(a)).normalize();
+            var bc = (c.clone().sub(b)).normalize();
+            nominalTriangles[4*i] = Math.acos(ab.dot(ac));
+            nominalTriangles[4*i+1] = Math.acos(-1*ab.dot(bc));
+            nominalTriangles[4*i+2] = Math.acos(ac.dot(bc));
+
+            if (Math.abs(nominalTriangles[4*i]+nominalTriangles[4*i+1]+nominalTriangles[4*i+2]-Math.PI)>0.1){
+                console.warn("bad angles");
+            }
+        }
+        gpuMath.initTextureFromData("u_nominalTriangles", textureDimFaces, textureDimFaces, "FLOAT", nominalTriangles, true);
     }
 
     function makeVector3(v){
@@ -922,6 +935,7 @@ function DynamicSolver($canvas){
 
     return {
         setFold: setFold,
+        updateFoldVerticesCoords: updateFoldVerticesCoords,
 
         setFixedVertices: setFixedVertices,
         fixVertexAtIndex: fixVertexAtIndex,

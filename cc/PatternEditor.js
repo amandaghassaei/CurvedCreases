@@ -84,7 +84,7 @@ function PatternEditor(model3D, dynamicSolver){
             }
             //update sim
             model3D.setFold(fold);
-            dynamicSolver.setFold(fold);
+            dynamicSolver.updateFoldVerticesCoords(fold.vertices_coords);
         }
 
     }
