@@ -442,6 +442,7 @@ function initControls(globals){
         globals.panelStiffness = val;
         globals.Animator.getSolver().setFacetStiffness(globals.panelStiffness);
     });
+
     setSliderInput("#rulingStiffness", globals.rulingStiffness, 0, 3, 0.01, function(val){
         globals.rulingStiffness = val;
         globals.Animator.getSolver().setRuleStiffness(globals.rulingStiffness);

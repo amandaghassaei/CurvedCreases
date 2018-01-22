@@ -98,8 +98,8 @@ function DynamicSolver($canvas){
         for (var i=0;i<creaseParams.length;i++) {//allCreaseParams.length
             var _creaseParams = creaseParams[i];//face1Ind, vert1Ind, face2Ind, ver2Ind, edgeInd, angle
             var type = 0;
-            if (fold.edges_assignment[creaseParams[4]] == "F") type = 1;
-            else if (fold.edges_assignment[creaseParams[4] == "R"]) type = 2;
+            if (fold.edges_assignment[_creaseParams[4]] == "F") type = 1;
+            else if (fold.edges_assignment[_creaseParams[4]] == "R") type = 2;
             //edge, face1Index, face2Index, targetTheta, type, node1, node2, index
             creases.push(new Crease(edges[_creaseParams[4]], _creaseParams[0], _creaseParams[2], _creaseParams[5], type, nodes[_creaseParams[1]], nodes[_creaseParams[3]], creases.length));
         }
@@ -124,7 +124,7 @@ function DynamicSolver($canvas){
         var faces = fold.faces_vertices;
         for (var i=0;i<fold.edges_vertices.length;i++){
             var assignment = fold.edges_assignment[i];
-            if (assignment !== "M" && assignment !== "V" && assignment !== "F") continue;
+            if (assignment !== "M" && assignment !== "V" && assignment !== "F" && assignment !== "R") continue;
             var edge = fold.edges_vertices[i];
             var v1 = edge[0];
             var v2 = edge[1];
@@ -453,6 +453,7 @@ function DynamicSolver($canvas){
 
     function getCreaseK(length, assignment){
         if (assignment == "F") return facetStiffness*length;
+        if (assignment == "R") return ruleStiffness*length;
         return creaseStiffness*length;
     }
 
@@ -702,6 +703,7 @@ function DynamicSolver($canvas){
             var crease = creases[i];
             var assignment = "M";
             if (crease.type == 1) assignment = "F";
+            if (crease.type == 2) assignment = "R";
             creaseMeta[i*4] = getCreaseK(crease.getLength(), assignment);
             // creaseMeta[i*4+1] = crease.getD();
             if (initing) creaseMeta[i*4+2] = crease.getTargetTheta();
@@ -880,10 +882,6 @@ function DynamicSolver($canvas){
 
     function getNodes(){
         return nodes;
-    }
-
-    function getCreases(){
-        return creases;
     }
 
     function setAxialStiffness(stiffness){

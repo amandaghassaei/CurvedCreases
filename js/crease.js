@@ -41,15 +41,6 @@ Crease.prototype.getTargetTheta = function(){
     return this.targetTheta;
 };
 
-Crease.prototype.getK = function(){
-    var length = this.getLength();
-    if (this.type == 0) return globals.panelStiffness*length;//todo this is weird
-    return globals.creaseStiffness*length;
-};
-
-Crease.prototype.getD = function(){
-    return globals.percentDamping*2*Math.sqrt(this.getK());
-};
 
 Crease.prototype.getIndex = function(){
     return this.index;

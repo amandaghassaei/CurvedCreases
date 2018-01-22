@@ -46,7 +46,7 @@ function initGlobals(){
         axialStiffness: 20,
         creaseStiffness: 0.7,
         panelStiffness: 0.7,
-        rulingStiffnes: 0.7,
+        rulingStiffness: 0.7,
         triStiffness: 1,
 
         //dynamic sim settings
