@@ -16,8 +16,8 @@ $(function() {
     dynamicSolver.setDamping(0.3);
     model3D.setColorMode("axialStrain");
 
-    // patternImporter.loadSVG('assets/Tessellations/reschTriTessellation.svg', {vertexTol: 1.8}, function(){
-    patternImporter.loadSVG('assets/cctests/huffmanTower-facets.svg', {vertexTol: 1.8}, function(){
+    patternImporter.loadSVG('assets/Tessellations/reschTriTessellation.svg', {vertexTol: 1.8}, function(){
+    // patternImporter.loadSVG('assets/cctests/huffmanTower-facets.svg', {vertexTol: 1.8}, function(){
 
         var fold = patternImporter.getFold();
         fold = patternImporter.edgesVerticesToVerticesEdges(fold);//need vertices_edges to map vertex movement to all adjacent edges
