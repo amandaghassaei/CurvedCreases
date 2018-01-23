@@ -64,6 +64,27 @@ function DynamicSolver($canvas){
         updateCreasesMeta();
     }
 
+    function resetToLastState(lastStatePosition){
+        //set position back to orig position
+        gpuMath.initTextureFromData("u_position", textureDim, textureDim, "FLOAT", lastStatePosition, true);
+        gpuMath.initFrameBufferForTexture("u_position", true);
+        zeroVelocity();
+    }
+
+    function moveVertAndSolve(i, newPosition, lastStatePosition, params){
+
+        resetToLastState(lastStatePosition);
+
+        fold.vertices_coords[i] = newPosition;
+        updateFoldVerticesCoords(fold.vertices_coords);
+
+        for (var i=0;i<10;i++){
+            solveSingleStep(params);
+        }
+
+        return calcStrain();
+    }
+
     function setFold(_fold){
 
         //fold assumed to have vertices_coords, edges_vertices, edges_assignment, edges_foldAngles, faces_vertices
@@ -269,14 +290,16 @@ function DynamicSolver($canvas){
     var textureDimNodeCreases = 0;
     var textureDimNodeFaces = 0;
 
-    function reset(){
-        gpuMath.step("zeroTexture", [], "u_position");
-        gpuMath.step("zeroTexture", [], "u_lastPosition");
-        gpuMath.step("zeroTexture", [], "u_lastLastPosition");
+    function zeroVelocity(){
+        gpuMath.step("copyTexture", ["u_position"], "u_lastPosition");
+        gpuMath.step("copyTexture", ["u_position"], "u_lastLastPosition");
         gpuMath.step("zeroTexture", [], "u_velocity");
         gpuMath.step("zeroTexture", [], "u_lastVelocity");
-        gpuMath.step("zeroThetaTexture", ["u_lastTheta"], "u_theta");
-        gpuMath.step("zeroThetaTexture", ["u_theta"], "u_lastTheta");
+        gpuMath.step("copyTexture", ["u_lastTheta"], "u_theta");
+    }
+
+    function reset(){
+
     }
 
     function stepForward(params){
@@ -424,6 +447,34 @@ function DynamicSolver($canvas){
             console.log("shouldn't be here");
         }
         model.update();
+        return globalError;
+    }
+
+    function calcStrain(){
+        var vectorLength = 4;
+        gpuMath.setProgram("packToBytes");
+        gpuMath.setUniformForProgram("packToBytes", "u_vectorLength", vectorLength, "1f");
+        gpuMath.setUniformForProgram("packToBytes", "u_floatTextureDim", [textureDim, textureDim], "2f");
+        gpuMath.setSize(textureDim*vectorLength, textureDim);
+        gpuMath.step("packToBytes", ["u_lastPosition"], "outputBytes");
+
+        var numVertices = fold.vertices_coords.length;
+
+        if (gpuMath.readyToRead()) {
+            var numPixels = numVertices*vectorLength;
+            var height = Math.ceil(numPixels/(textureDim*vectorLength));
+            var pixels = new Uint8Array(height*textureDim*4*vectorLength);
+            gpuMath.readPixels(0, 0, textureDim * vectorLength, height, pixels);
+            var parsedPixels = new Float32Array(pixels.buffer);
+            var globalError = 0;
+            for (var i = 0; i < numVertices; i++) {
+                var rgbaIndex = i * vectorLength;
+                globalError += parsedPixels[rgbaIndex+3]*100;
+            }
+            return globalError;
+        } else {
+            console.log("shouldn't be here");
+        }
     }
 
     function setSolveParams(){
@@ -933,10 +984,36 @@ function DynamicSolver($canvas){
         gpuMath.step("zeroTexture", [], "u_velocity");
     }
 
+    function getTextureDim(){
+        return textureDim;
+    }
+
+    function capturePositions(){
+        var vectorLength = 4;
+        gpuMath.setProgram("packToBytes");
+        gpuMath.setUniformForProgram("packToBytes", "u_vectorLength", vectorLength, "1f");
+        gpuMath.setUniformForProgram("packToBytes", "u_floatTextureDim", [textureDim, textureDim], "2f");
+        gpuMath.setSize(textureDim*vectorLength, textureDim);
+        gpuMath.step("packToBytes", ["u_lastPosition"], "outputBytes");
+
+        if (gpuMath.readyToRead()) {
+            var pixels = new Uint8Array(textureDim*textureDim*4*vectorLength);
+            gpuMath.readPixels(0, 0, textureDim * vectorLength, textureDim, pixels);
+            return new Float32Array(pixels.buffer);
+        } else {
+            console.log("shouldn't be here");
+        }
+        model.update();
+    }
+
 
     return {
         setFold: setFold,
         updateFoldVerticesCoords: updateFoldVerticesCoords,
+        moveVertAndSolve: moveVertAndSolve,
+        calcStrain: calcStrain,
+        resetToLastState: resetToLastState,
+        capturePositions: capturePositions,
 
         setFixedVertices: setFixedVertices,
         fixVertexAtIndex: fixVertexAtIndex,
@@ -956,6 +1033,7 @@ function DynamicSolver($canvas){
 
         //todo get rid of these
         getNodes: getNodes,
+        getTextureDim: getTextureDim,
 
         updateModel3DGeometry: updateModel3DGeometry,
         reCenter: reCenter

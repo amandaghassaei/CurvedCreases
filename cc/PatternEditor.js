@@ -32,10 +32,13 @@ function PatternEditor(model3D, dynamicSolver){
         e.stopPropagation();
     });
 
+    var lineElements, vertexElements;
+
     function draw(fold){
         var coords, edge_vertices, j, len, len1, ref, ref1, vertex; ref = fold.vertices_coords;
 
-        var lineElements = [];
+        lineElements = [];
+        vertexElements = [];
 
         ref1 = fold.edges_vertices;
         for (j = 0, len1 = ref1.length; j < len1; j++) {
@@ -57,6 +60,7 @@ function PatternEditor(model3D, dynamicSolver){
         for (let i = 0, len = ref.length; i < len; i++) {
             coords = ref[i];
             let element = svg.circle(0.01).center(coords[0], coords[2]);
+            vertexElements.push(element);
             element.mousedown(function(e){
                 e.preventDefault();
                 e.stopPropagation();
@@ -89,12 +93,29 @@ function PatternEditor(model3D, dynamicSolver){
 
     }
 
+    function updateSVG(fold){
+
+        for (var i=0;i<fold.edges_vertices.length;i++){
+            var edgeVertices = fold.edges_vertices[i];
+            lineElements[i].plot(fold.vertices_coords[edgeVertices[0]][0],
+                    fold.vertices_coords[edgeVertices[0]][2],
+                    fold.vertices_coords[edgeVertices[1]][0],
+                    fold.vertices_coords[edgeVertices[1]][2]
+            );
+        }
+        for (var i=0;i<fold.vertices_coords.length;i++){
+            vertexElements[i].center(fold.vertices_coords[i][0], fold.vertices_coords[i][2]);
+        }
+
+    }
+
     function onWindowResize(){
         svg.size($foldViewer.width(), $foldViewer.height());
     }
 
     return {
         draw: draw,
-        onWindowResize: onWindowResize
+        onWindowResize: onWindowResize,
+        updateSVG: updateSVG
     }
 }
