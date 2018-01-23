@@ -39,6 +39,10 @@ body{
 #startOptimization{
     position: absolute;
 }
+#stopOptimization{
+    position: absolute;
+    display: none;
+}
 
 span{
     position: absolute;

@@ -42,8 +42,16 @@ $(function() {
 
     $("#startOptimization").click(function(e){
         e.preventDefault();
-        console.log(window.fold);
         optimizing = true;
+        $(e.target).hide();
+        $("#stopOptimization").show();
+    });
+
+    $("#stopOptimization").click(function(e){
+        e.preventDefault();
+        optimizing = false;
+        $(e.target).hide();
+        $("#startOptimization").show();
     });
 
     function loop(){
