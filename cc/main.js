@@ -15,7 +15,7 @@ $(function() {
 
     threeView.addModel(model3D);
 
-    dynamicSolver.setDamping(0.3);
+    dynamicSolver.setDamping(0.1);
     model3D.setColorMode("axialStrain");
 
     patternImporter.loadSVG('assets/Tessellations/reschTriTessellation.svg', {vertexTol: 1.8}, function(){
@@ -60,11 +60,10 @@ $(function() {
             var positions = dynamicSolver.capturePositions();
             solve(153, [], dynamicSolver.calcStrain(), positions, window.fold);//start over
             model3D.setFold(window.fold);
-            console.log("position", window.fold.vertices_coords[153]);
             patternEditor.updateSVG(window.fold);
             dynamicSolver.resetToLastState(positions);
             dynamicSolver.updateFoldVerticesCoords(fold.vertices_coords);
-            dynamicSolver.stepForward({numSteps: 10});
+            dynamicSolver.stepForward({numSteps: 100});
             var error = dynamicSolver.updateModel3DGeometry(model3D, {colorMode: "axialStrain", strainClip: 5});
             $("#globalStrain").html(error);
             threeView.render();
@@ -105,10 +104,6 @@ $(function() {
             if (delta.length() > maxStepSize){
                 delta.normalize().multiplyScalar(maxStepSize);//clip to some max step size
             }
-
-            console.log(evals);
-            console.log(currentStrain);
-            console.log(delta);
 
             //save changes
             fold.vertices_coords[i] = [fold.vertices_coords[i][0]+delta.x, fold.vertices_coords[i][1], fold.vertices_coords[i][2]+delta.y];

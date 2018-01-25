@@ -78,7 +78,7 @@ function DynamicSolver($canvas){
         fold.vertices_coords[i] = newPosition;
         updateFoldVerticesCoords(fold.vertices_coords);
 
-        for (var i=0;i<10;i++){
+        for (var i=0;i<1;i++){
             solveSingleStep(params);
         }
 
