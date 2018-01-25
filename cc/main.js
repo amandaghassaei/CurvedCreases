@@ -59,7 +59,8 @@ $(function() {
         if (optimizing){
             var positions = dynamicSolver.capturePositions();
             solve(153, [], dynamicSolver.calcStrain(), positions, window.fold);//start over
-            model3D.setFold(window.fold);//this saves a snapshot
+            model3D.setFold(window.fold);
+            console.log("position", window.fold.vertices_coords[153]);
             patternEditor.updateSVG(window.fold);
             dynamicSolver.resetToLastState(positions);
             dynamicSolver.updateFoldVerticesCoords(fold.vertices_coords);
@@ -91,10 +92,14 @@ $(function() {
             var delta = new THREE.Vector2();
             if (evals[0]<currentStrain) {
                 delta.x = currentStrain-evals[0];
+            }
+            if (evals[1]<currentStrain){
                 if (evals[1]<evals[0]) delta.x = -(currentStrain-evals[1]);
             }
             if (evals[2]<currentStrain) {
                 delta.y = currentStrain-evals[2];
+            }
+            if (evals[3]<currentStrain){
                 if (evals[3]<evals[2]) delta.y = -(currentStrain-evals[3]);
             }
             if (delta.length() > maxStepSize){
@@ -112,7 +117,7 @@ $(function() {
         }
 
         var vector = new THREE.Vector3(maxStepSize, 0, 0);
-        if (evals.length == 1) new THREE.Vector3(-maxStepSize, 0, 0);
+        if (evals.length == 1) vector = new THREE.Vector3(-maxStepSize, 0, 0);
         else if (evals.length == 2) vector = new THREE.Vector3(0, 0, maxStepSize);
         else if (evals.length == 3) vector = new THREE.Vector3(0, 0, -maxStepSize);
 

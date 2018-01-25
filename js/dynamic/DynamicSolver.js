@@ -295,7 +295,8 @@ function DynamicSolver($canvas){
         gpuMath.step("copyTexture", ["u_position"], "u_lastLastPosition");
         gpuMath.step("zeroTexture", [], "u_velocity");
         gpuMath.step("zeroTexture", [], "u_lastVelocity");
-        gpuMath.step("copyTexture", ["u_lastTheta"], "u_theta");
+        //todo zero theta
+        // gpuMath.step("copyTexture", ["u_lastTheta"], "u_theta");
     }
 
     function reset(){
